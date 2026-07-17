@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="SCAM.css">
+  <title>Scam Message Detector</title>
+</head>
+<body>
+  <div class="container">
+    <h1>Scam Message Detector</h1>
+    <p class="subtitle">
+      Paste a suspicious text message and gmails to estimate whether it may be a scam.
+    </p>
+
+    <textarea id="messageInput" placeholder="Paste a suspicious message here..."></textarea>
+
+    <div class="buttons">
+      <button class="analyze-btn" onclick="analyzeMessage()">Analyze Message</button>
+      <button class="clear-btn" onclick="clearMessage()">Clear</button>
+    </div>
+
+    <div id="resultBox" class="result">
+      <h2 id="riskLevel"></h2>
+      <p id="scoreText" class="score"></p>
+
+      <div>
+        <h3 style="margin-top:20px;">Detected Warning Signs</h3>
+        <div id="flagsContainer" class="flags"></div>
+      </div>
+    </div>
+
+    <div class="tips">
+      <div class="card">
+        <h3>Common Scam Signs</h3>
+        <ul>
+          <li>Urgent threats</li>
+          <li>Password requests</li>
+          <li>Unknown shortened links</li>
+          <li>Crypto or gift card payments</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Safety Tips</h3>
+        <ul>
+          <li>Verify senders directly</li>
+          <li>Never share OTP codes</li>
+          <li>Avoid suspicious links</li>
+          <li>Use MFA everywhere</li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3>Upgrade Ideas</h3>
+        <ul>
+          <li>Add AI classification</li>
+          <li>Scan URLs automatically</li>
+          <li>Connect email inboxes</li>
+          <li>Create a browser extension</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+<script> const scamKeywords = [
+      'urgent',
+      'verify your account',
+      'click here',
+      'password',
+      'otp',
+      'wire transfer',
+      'gift card',
+      'crypto',
+      'bitcoin',
+      'social security',
+      'security alert',
+      'you won',
+      'free money',
+      'claim reward'
+    ];
+
+    const suspiciousPatterns = [
+      {
+        label: 'Suspicious Link',
+        regex: /(http:\/\/|bit\.ly|tinyurl|grabify|t\.co)/i,
+        weight: 25
+      },
+      {
+        label: 'Pressure Language',
+        regex: /(urgent|act now|immediately|final warning)/i,
+        weight: 20
+      },
+      {
+        label: 'Credential Theft Attempt',
+        regex: /(password|otp|verify your account|login)/i,
+        weight: 30
+      },
+      {
+        label: 'Financial Scam Request',
+        regex: /(wire transfer|gift card|bitcoin|crypto)/i,
+        weight: 30
+      },
+      {
+        label: 'Too-Good-To-Be-True Offer',
+        regex: /(free money|you won|claim reward)/i,
+        weight: 20
+      }
+    ];
+
+    function analyzeMessage() {
+      const message = document.getElementById('messageInput').value;
+      const resultBox = document.getElementById('resultBox');
+      const riskLevel = document.getElementById('riskLevel');
+      const scoreText = document.getElementById('scoreText');
+      const flagsContainer = document.getElementById('flagsContainer');
+
+      if (!message.trim()) {
+        alert('Please paste a message first.');
+        return;
+      }
+
+      let score = 0;
+      const flags = [];
+
+      const lowerMessage = message.toLowerCase();
+
+      scamKeywords.forEach(keyword => {
+        if (lowerMessage.includes(keyword)) {
+          score += 4;
+        }
+      });
+
+      suspiciousPatterns.forEach(pattern => {
+        if (pattern.regex.test(message)) {
+          score += pattern.weight;
+          flags.push(pattern.label);
+        }
+      });
+
+      if (/[A-Z]{5,}/g.test(message)) {
+        score += 10;
+        flags.push('Excessive Capital Letters');
+      }
+
+      if (/!{3,}/g.test(message)) {
+        score += 10;
+        flags.push('Aggressive Punctuation');
+      }
+
+      let risk = 'Low';
+      let emoji = '✅';
+      let className = 'low';
+
+      if (score >= 70) {
+        risk = 'High';
+        emoji = '🚨';
+        className = 'high';
+      } else if (score >= 35) {
+        risk = 'Medium';
+        emoji = '⚠️';
+        className = 'medium';
+      }
+
+      resultBox.style.display = 'block';
+      resultBox.className = `result ${className}`;
+
+      riskLevel.innerHTML = `${emoji} Risk Level: ${risk}`;
+      scoreText.textContent = `Scam Confidence Score: ${score}/100`;
+
+      flagsContainer.innerHTML = '';
+
+      if (flags.length === 0) {
+        flagsContainer.innerHTML = '<div class="flag">No major warning signs detected</div>';
+      } else {
+        flags.forEach(flag => {
+          const element = document.createElement('div');
+          element.className = 'flag';
+          element.textContent = flag;
+          flagsContainer.appendChild(element);
+        });
+      }
+    }
+
+    function clearMessage() {
+      document.getElementById('messageInput').value = '';
+      document.getElementById('resultBox').style.display = 'none';
+    }</script>
+</body>
+</html>
